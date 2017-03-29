@@ -29,9 +29,10 @@ func main() {
 containerd client
 `
 	app.Flags = []cli.Flag{
-		cli.BoolFlag{
-			Name:  "debug",
-			Usage: "enable debug output in logs",
+		cli.StringFlag{
+			Name:  "log-level,l",
+			Usage: "set the logging level [debug, info, warn, error, fatal, panic]",
+			Value: "info",
 		},
 		cli.StringFlag{
 			Name:  "socket, s",
@@ -56,8 +57,12 @@ containerd client
 		pprofCommand,
 	}
 	app.Before = func(context *cli.Context) error {
-		if context.GlobalBool("debug") {
-			logrus.SetLevel(logrus.DebugLevel)
+		if l := context.GlobalString("log-level"); l != "" {
+			lvl, err := logrus.ParseLevel(l)
+			if err != nil {
+				return err
+			}
+			logrus.SetLevel(lvl)
 		}
 		return nil
 	}
